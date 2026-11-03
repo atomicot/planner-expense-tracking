@@ -17,8 +17,10 @@
     // Personal data loads on first visit (this page doesn't follow the Personal / Team switcher).
     if (!d.loaded) s.ensure(personal).then(() => { if (App.main.route() === 'profile') render(el); });
 
-    const mins = sum(d.activities, (a) => durationMin(a.start, a.end));
-    const donePct = d.activities.length ? Math.round((d.activities.filter((a) => a.done).length / d.activities.length) * 100) : 0;
+    // every occurrence up to today (recurring activities count once per day they happen)
+    const acts = App.schedule.expand(d.activities, App.schedule.firstDate(d.activities), App.util.todayISO());
+    const mins = sum(acts, (a) => durationMin(a.start, a.end));
+    const donePct = acts.length ? Math.round((acts.filter((a) => a.done).length / acts.length) * 100) : 0;
     const income = sum(d.transactions.filter((x) => x.type === 'income'), (x) => x.amount);
     const expense = sum(d.transactions.filter((x) => x.type === 'expense'), (x) => x.amount);
     const since = u.createdAt ? i18n.date(toISO(new Date(u.createdAt)), 'long') : null;
@@ -44,7 +46,7 @@
         <div class="card full">
           <div class="card-head"><h3>${t('prof.summary')} <span class="sub">· ${t('prof.summarySub')}</span></h3></div>
           <div class="prof-stats">
-            <div class="prof-stat"><div class="k">${t('prof.activities')}</div><div class="v">${d.activities.length}</div></div>
+            <div class="prof-stat"><div class="k">${t('prof.activities')}</div><div class="v">${acts.length}</div></div>
             <div class="prof-stat"><div class="k">${t('prof.hours')}</div><div class="v">${i18n.hours(mins)}</div></div>
             <div class="prof-stat"><div class="k">${t('prof.done')}</div><div class="v">${donePct}%</div></div>
             <div class="prof-stat"><div class="k">${t('prof.income')}</div><div class="v">${i18n.money(income)}</div></div>

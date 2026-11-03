@@ -41,7 +41,8 @@
     const week0 = startOfWeek(date);
     const days = Array.from({ length: 7 }, (_, i) => addDays(week0, i));
     const today = todayISO();
-    const acts = d.activities.filter((a) => a.date === date);
+    const weekInst = App.schedule.expand(d.activities, days[0], days[6]); // one instance per occurrence
+    const acts = weekInst.filter((a) => a.date === date);
     const txs = d.transactions.filter((x) => x.date === date).sort((p, q) => (q.createdAt || 0) - (p.createdAt || 0));
     const minutes = sum(acts, (a) => durationMin(a.start, a.end));
     const income = sum(txs.filter((x) => x.type === 'income'), (x) => x.amount);
@@ -54,25 +55,26 @@
     acts.forEach((a) => { h0 = Math.min(h0, Math.floor(toMin(a.start) / 60)); });
     const hours = Array.from({ length: h1 - h0 }, (_, i) => h0 + i);
     const items = layout(acts);
-    const costOf = (id) => {
-      const lx = d.transactions.filter((x) => x.activityId === id);
-      return sum(lx, (x) => (x.type === 'income' ? x.amount : -x.amount));
-    };
+    const costOf = (inst) => sum(App.schedule.linked(d.transactions, inst), (x) => (x.type === 'income' ? x.amount : -x.amount));
+    const prioOf = (a) => App.PRIORITIES.find((p) => p.id === a.priority);
 
     const blocks = items.map((it) => {
       const a = it.a; const c = S().cat(a.categoryId);
       const top = it.s - h0 * 60;
       const height = Math.max(Math.min(it.e, h1 * 60) - it.s, 30);
       const w = 100 / it.cols;
-      const net = costOf(a.id);
+      const net = costOf(a);
       const short = height < 50;
+      const p = prioOf(a);
+      const sub = S().subName(c, a.subId);
+      const badges = `${p ? `<span class="badge" title="${esc(t('prio.' + p.id))}">${p.emoji}</span>` : ''}${a.recurring ? `<span class="badge" title="${esc(t('rep.' + a.repeat.freq))}">↻</span>` : ''}`;
       return `<div class="tl-block ${a.done ? 'done' : ''}" data-act="${a.id}" tabindex="0" role="button"
         style="top:${top}px;height:${height}px;left:calc(${w * it.col}% + 2px);width:calc(${w}% - 4px);
         background:color-mix(in srgb, ${c.color} 24%, var(--surface));box-shadow:inset 4px 0 0 ${c.color}">
         <div class="t"><button class="check" data-check="${a.id}" aria-label="${t('act.markDone')}">${a.done ? icons.check : ''}</button>
-          <span>${c.emoji}</span><span class="title">${esc(a.title)}</span>
+          <span>${c.emoji}</span><span class="title">${esc(a.title)}</span>${badges}
           ${short && net ? `<span class="m"><span class="cost">${net > 0 ? '+' : '−'}${App.i18n.money(Math.abs(net))}</span></span>` : ''}</div>
-        ${short ? '' : `<div class="m"><span>${a.start}–${a.end}</span>
+        ${short ? '' : `<div class="m"><span>${a.start}–${a.end}</span>${sub ? `<span>· ${esc(sub)}</span>` : ''}
           ${net ? `<span class="cost">${net > 0 ? '+' : '−'}${App.i18n.money(Math.abs(net))}</span>` : ''}
           ${S().isTeam() ? `<span class="avatar xs" title="${esc(S().memberName(a.createdBy))}">${esc(initials(S().memberName(a.createdBy)))}</span>` : ''}</div>`}
       </div>`;
@@ -98,7 +100,7 @@
         </div>
       </div>
       <div class="week-strip">${days.map((dd) => {
-        const n = d.activities.filter((a) => a.date === dd).length;
+        const n = weekInst.filter((a) => a.date === dd).length;
         return `<button class="day-pill ${dd === date ? 'active' : ''} ${dd === today ? 'today' : ''}" data-day="${dd}">
           <span class="wd">${App.i18n.weekday(dd)}</span><span class="dn">${+dd.slice(8)}</span>
           <span class="dots">${'<i></i>'.repeat(Math.min(n, 3))}</span></button>`;
@@ -147,12 +149,12 @@
       const chk = e.target.closest('[data-check]');
       if (chk) {
         e.stopPropagation();
-        const a = d.activities.find((x) => x.id === chk.dataset.check);
-        S().update('activities', a.id, { done: !a.done });
+        const a = acts.find((x) => x.id === chk.dataset.check);
+        S().update('activities', a.id, App.schedule.donePatch(a));
         return;
       }
       const blk = e.target.closest('[data-act]');
-      if (blk) { openActivity({ activity: d.activities.find((x) => x.id === blk.dataset.act) }); return; }
+      if (blk) { openActivity({ activity: acts.find((x) => x.id === blk.dataset.act) }); return; }
       const slot = e.target.closest('[data-hour]');
       if (slot) openActivity({ date, start: `${String(slot.dataset.hour).padStart(2, '0')}:00` });
     });

@@ -31,3 +31,11 @@
   .stat-row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .stat-row .stat { padding: 14px 16px; }
 }
+
+/* expense split by group (Needs / Wants / Savings) */
+.group-split { margin-bottom: 18px; }
+.split-bar { display: flex; gap: 2px; height: 14px; border-radius: 99px; overflow: hidden; background: var(--line-2); margin-bottom: 12px; }
+.split-bar i { display: block; min-width: 4px; }
+.split-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--text-2); }
+.split-legend .li { display: inline-flex; align-items: center; gap: 6px; }
+.split-legend .sw { width: 10px; height: 10px; border-radius: 3px; }

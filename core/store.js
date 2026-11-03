@@ -5,6 +5,13 @@ App.store = (() => {
   const cache = new Map(); // scopeKey -> { activities, transactions, categories, ready, unsub }
   let teamsUnsub = null;
 
+  // Records saved before subcategories existed use old category ids — map them to the new ones on read.
+  // The record is stored with the new ids the next time it's saved.
+  function upgrade(r) {
+    const legacy = App.LEGACY_CATEGORIES[r.categoryId];
+    return legacy ? { ...r, categoryId: legacy[0], subId: r.subId || legacy[1] || null } : r;
+  }
+
   const s = {
     adapter: null,
     mode: 'local',
@@ -94,7 +101,7 @@ App.store = (() => {
         c = { activities: [], transactions: [], categories: [] };
         cache.set(key, c);
         const w = s.adapter.watch(scope, (kind, docs) => {
-          c[kind] = docs;
+          c[kind] = kind === 'categories' ? docs : docs.map(upgrade);
           if (c.loaded) s.emit('data', scope);
         });
         c.unsub = w.unsub;
@@ -111,15 +118,26 @@ App.store = (() => {
       cache.delete(key);
     },
 
+    // Main categories (defaults + the scope's custom ones), optionally of one kind.
+    // Custom categories have no subcategories; custom expense categories default to the "wants" group.
     categories(kind, scope = s.scope) {
-      const custom = s.data(scope).categories || [];
+      const custom = (s.data(scope).categories || []).map((c) => ({ subs: [], ...c, group: c.kind === 'expense' ? c.group || 'wants' : undefined }));
       return App.DEFAULT_CATEGORIES.concat(custom).filter((c) => !kind || c.kind === kind).map((c) => ({ ...c, color: App.color(c.color) }));
     },
     cat(id, scope = s.scope) {
+      const legacy = App.LEGACY_CATEGORIES[id];
+      if (legacy) id = legacy[0];
       return s.categories(null, scope).find((c) => c.id === id)
-        || { id, kind: 'activity', key: 'cat.other', emoji: '•', color: '#b8c0cc' };
+        || { id, kind: 'activity', key: 'cat.a-inbox', emoji: '•', color: App.color(App.NEUTRAL), subs: [] };
     },
     catName(c) { return c.key ? App.i18n.t(c.key) : c.name; },
+    subName(c, subId) { return subId && (c.subs || []).includes(subId) ? App.i18n.t(`sub.${c.id}.${subId}`) : ''; },
+    // "Main › Sub" label for a record's categoryId + subId.
+    catLabel(categoryId, subId, scope = s.scope) {
+      const c = s.cat(categoryId, scope);
+      const sub = s.subName(c, subId);
+      return sub ? `${s.catName(c)} › ${sub}` : s.catName(c);
+    },
 
     memberName(uid) {
       if (s.user && uid === s.user.id) return s.user.name;

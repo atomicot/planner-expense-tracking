@@ -54,3 +54,15 @@
   .chart-box.donut { height: 190px; max-width: 220px; margin: 0 auto; width: 100%; }
   .dash-filters .range-inputs .input { width: 135px; }
 }
+
+/* Eisenhower summary */
+.eis-grid { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.eis-axis { font-size: 11.5px; color: var(--muted); text-align: center; align-self: end; }
+.eis-axis.side { align-self: center; text-align: right; writing-mode: initial; padding-right: 2px; }
+.eis-tile { border-radius: 16px; padding: 12px 14px; background: var(--tint); border: 1px solid var(--line-2); min-width: 0; }
+.eis-tile.eis-do { background: color-mix(in srgb, var(--expense-soft) 70%, var(--surface)); }
+.eis-tile.eis-plan { background: color-mix(in srgb, var(--primary-soft) 70%, var(--surface)); }
+.eis-tile.empty { opacity: .6; }
+.eis-name { font-size: 12.5px; font-weight: 600; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eis-v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.eis-s, .eis-hint { font-size: 11.5px; color: var(--muted); }

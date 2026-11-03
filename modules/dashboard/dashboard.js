@@ -29,7 +29,7 @@
   function legendRows(rows, fmt) {
     return `<div class="legend">${rows.map((r) => `
       <div class="legend-row"><span class="sw" style="background:${r.cat.color}"></span>
-        <span class="n">${r.cat.emoji} ${esc(S().catName(r.cat))}</span>
+        <span class="n" title="${esc(S().catName(r.cat))}">${r.cat.emoji} ${esc(S().catName(r.cat))}</span>
         <span class="val">${fmt(r.value)}</span><span class="pct">${Math.round(r.pct * 100)}%</span></div>`).join('')}</div>`;
   }
 
@@ -61,7 +61,7 @@
     const d = S().data();
     const { from, to } = range();
     const days = daysBetween(from, to);
-    const acts = d.activities.filter((a) => a.date >= from && a.date <= to);
+    const acts = App.schedule.expand(d.activities, from, to); // one instance per occurrence (recurring included)
     const txs = d.transactions.filter((x) => x.date >= from && x.date <= to);
     const mins = (a) => durationMin(a.start, a.end);
     const totalMin = sum(acts, mins);
@@ -73,17 +73,36 @@
     const net = income - expense;
 
     const timeRows = byCategory(acts, 'activity', mins);
-    const spendRows = byCategory(expenses, 'expense', (x) => x.amount);
+    // spending by group (Needs / Wants / Savings / Other) — few hues, one per group
+    const spendRows = App.EXPENSE_GROUPS.map((g) => ({
+      cat: { id: g.id, key: g.key, emoji: '', color: App.color(g.color) },
+      value: sum(expenses.filter((x) => S().cat(x.categoryId).group === g.id), (x) => x.amount),
+    })).filter((r) => r.value > 0).map((r) => ({ ...r, pct: expense ? r.value / expense : 0 }));
+    const topCats = byCategory(expenses, 'expense', (x) => x.amount).sort((p, q) => q.value - p.value).slice(0, 8);
+    const topCatMax = topCats.length ? topCats[0].value : 1;
+
+    // Eisenhower quadrants + one-off vs recurring
+    const quads = App.PRIORITIES.map((p) => {
+      const xs = acts.filter((a) => a.priority === p.id);
+      return { p, n: xs.length, min: sum(xs, mins), done: xs.filter((a) => a.done).length };
+    });
+    const noPrio = acts.filter((a) => !a.priority);
+    const recurringN = acts.filter((a) => a.recurring).length;
+    const quadTile = (q) => `<div class="eis-tile eis-${q.p.id} ${q.n ? '' : 'empty'}">
+      <div class="eis-name">${q.p.emoji} ${t('prio.' + q.p.id)}</div>
+      <div class="eis-v">${i18n.hours(q.min)}</div>
+      <div class="eis-s">${t('dash.quadSub', { n: q.n, p: q.n ? Math.round((q.done / q.n) * 100) : 0 })}</div>
+      <div class="eis-hint">${t('prio.' + q.p.id + '.hint')}</div></div>`;
     const multiDay = days.length > 1;
     const monthly = days.length > 62;
     const buckets = monthly ? [...new Set(days.map((x) => x.slice(0, 7)))] : days;
     const bucketOf = (iso) => (monthly ? iso.slice(0, 7) : iso);
     const bucketLabel = (b) => (monthly ? i18n.monthShort(b + '-01') : (days.length <= 7 ? `${i18n.weekday(b)} ${+b.slice(8)}` : `${+b.slice(8)}/${+b.slice(5, 7)}`));
 
-    // top activities by linked expense
-    const linkedCost = new Map();
-    d.transactions.filter((x) => x.activityId && x.type === 'expense').forEach((x) => linkedCost.set(x.activityId, (linkedCost.get(x.activityId) || 0) + x.amount));
-    const topActs = acts.filter((a) => linkedCost.get(a.id)).map((a) => ({ a, v: linkedCost.get(a.id) })).sort((p, q) => q.v - p.v).slice(0, 6);
+    // top activities by linked expense (per occurrence)
+    const expensesLinked = d.transactions.filter((x) => x.activityId && x.type === 'expense');
+    const topActs = acts.map((a) => ({ a, v: sum(App.schedule.linked(expensesLinked, a), (x) => x.amount) }))
+      .filter((r) => r.v > 0).sort((p, q) => q.v - p.v).slice(0, 6);
     const topMax = topActs.length ? topActs[0].v : 1;
 
     const isTeam = S().isTeam();
@@ -153,6 +172,25 @@
             }))}` : empty('💸', t('dash.noMoney'))}
         </div>` : ''}
 
+        <div class="card span-6">
+          <div class="card-head"><h3>${t('dash.priority')}</h3><span class="sub">${t('dash.recurringSplit', { r: recurringN, o: acts.length - recurringN })}</span></div>
+          ${acts.length ? `<div class="eis-grid">
+            <span></span><span class="eis-axis">${t('urgent')}</span><span class="eis-axis">${t('notUrgent')}</span>
+            <span class="eis-axis side">${t('important')}</span>${quadTile(quads[0])}${quadTile(quads[1])}
+            <span class="eis-axis side">${t('notImportant')}</span>${quadTile(quads[2])}${quadTile(quads[3])}
+          </div>
+          ${noPrio.length ? `<p class="muted small" style="margin:10px 0 0">${t('dash.noPriority', { n: noPrio.length, h: i18n.hours(sum(noPrio, mins)) })}</p>` : ''}`
+            : empty('🧭', t('dash.noTime'))}
+        </div>
+        <div class="card span-6">
+          <div class="card-head"><h3>${t('dash.topExpenseCats')}</h3></div>
+          ${topCats.length ? `<div class="bar-list">${topCats.map((r) => `
+            <div class="bar-item"><div class="top"><span class="n">${r.cat.emoji} ${esc(S().catName(r.cat))}
+              <span class="muted tiny">· ${esc(t(App.EXPENSE_GROUPS.find((g) => g.id === r.cat.group).key))}</span></span><span class="v">${i18n.money(r.value)}</span></div>
+              <div class="track"><i style="width:${(r.value / topCatMax) * 100}%;background:${r.cat.color}"></i></div></div>`).join('')}</div>`
+            : empty('🧾', t('dash.noSpend'))}
+        </div>
+
         <div class="card ${multiDay ? 'span-5' : 'span-6'}">
           <div class="card-head"><h3>${t('dash.topCost')}</h3></div>
           ${topActs.length ? `<div class="bar-list">${topActs.map(({ a, v }) => {
@@ -167,7 +205,8 @@
             <div class="did-day">${i18n.date(day, 'weekdayLong')}</div>
             ${xs.map((a) => { const c = S().cat(a.categoryId); return `<div class="did-item ${a.done ? 'done' : ''}">
               <span class="tm">${a.start}–${a.end}</span><span class="sw" style="background:${c.color}"></span>
-              <span class="n">${a.done ? '✓ ' : ''}${esc(a.title)}${isTeam ? ` <span class="muted tiny">· ${esc(S().memberName(a.createdBy))}</span>` : ''}</span>
+              <span class="n">${a.done ? '✓ ' : ''}${esc(a.title)}${a.priority ? ` ${App.PRIORITIES.find((p) => p.id === a.priority).emoji}` : ''}${a.recurring ? ' ↻' : ''}
+                <span class="muted tiny">· ${esc(S().subName(c, a.subId) || S().catName(c))}</span>${isTeam ? ` <span class="muted tiny">· ${esc(S().memberName(a.createdBy))}</span>` : ''}</span>
               <span class="muted tiny num">${i18n.hours(mins(a))}</span></div>`; }).join('')}`).join('')}</div>` : empty('🌱', t('dash.noTime'))}
         </div>
 

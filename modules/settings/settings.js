@@ -5,7 +5,7 @@
   const { addSample, exportJSON, importJSON } = App.parts.settings;
   const S = () => App.store;
   let dataScope = null; // scope the Data & Categories cards act on
-  const newCat = { kind: 'activity', color: App.PALETTE[0], emoji: '⭐' };
+  const newCat = { kind: 'activity', color: App.PALETTE[0], emoji: '⭐', group: 'wants' };
 
   function render(el) {
     const t = App.i18n.t;
@@ -35,7 +35,7 @@
             <select id="s-scope" class="select" data-scope-select>${scopeOpts.map((o) => `<option value="${o.type}:${esc(o.id)}" ${o.type === dataScope.type && o.id === dataScope.id ? 'selected' : ''}>${o.type === 'team' ? '👥' : '👤'} ${esc(o.name)}</option>`).join('')}</select></div>
           <div class="cat-list">${custom.length ? custom.map((c) => `
             <div class="cat-row"><span class="em" style="background:color-mix(in srgb, ${App.color(c.color)} 25%, var(--surface))">${esc(c.emoji)}</span>
-              <span class="nm3">${esc(c.name)}</span><span class="tag">${t('kind.' + c.kind)}</span>
+              <span class="nm3">${esc(c.name)}</span><span class="tag">${t('kind.' + c.kind)}${c.kind === 'expense' ? ` · ${esc(t('grp.' + (c.group || 'wants')))}` : ''}</span>
               <button class="icon-btn plain" data-del-cat="${c.id}" aria-label="${t('delete')}">${icons.trash}</button></div>`).join('')
               : `<div class="muted small">${t('set.noCustom')}</div>`}</div>
           <form data-new-cat>
@@ -45,7 +45,9 @@
               <input class="input" name="name" placeholder="${t('set.catNamePh')}" maxlength="30" aria-label="${t('name')}">
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap">
-              <div class="color-pick">${App.PALETTE.map((c) => `<button type="button" data-color="${c}" class="${newCat.color === c ? 'active' : ''}" style="background:${App.color(c)}" aria-label="${c}"></button>`).join('')}</div>
+              <div class="color-pick" data-color-pick ${newCat.kind === 'expense' ? 'hidden' : ''}>${App.PALETTE.map((c) => `<button type="button" data-color="${c}" class="${newCat.color === c ? 'active' : ''}" style="background:${App.color(c)}" aria-label="${c}"></button>`).join('')}</div>
+              <select class="select" name="group" data-group-pick style="flex:1;max-width:240px;height:38px" aria-label="${t('set.group')}" ${newCat.kind === 'expense' ? '' : 'hidden'}>
+                ${App.EXPENSE_GROUPS.map((g) => `<option value="${g.id}" ${newCat.group === g.id ? 'selected' : ''}>${esc(t(g.key))}</option>`).join('')}</select>
               <button class="btn soft sm" type="submit">${icons.plus}${t('add')}</button>
             </div>
           </form>
@@ -88,13 +90,22 @@
       newCat.color = b.dataset.color;
       $$('[data-color]', form).forEach((x) => x.classList.toggle('active', x === b));
     });
+    // expense categories take their group's colour, so pick a group instead of a colour
+    form.kind.onchange = () => {
+      const exp = form.kind.value === 'expense';
+      $('[data-color-pick]', form).hidden = exp;
+      $('[data-group-pick]', form).hidden = !exp;
+    };
     form.onsubmit = async (e) => {
       e.preventDefault();
       const name = form.name.value.trim();
       if (!name) return form.name.focus();
       newCat.kind = form.kind.value;
       newCat.emoji = form.emoji.value.trim() || '⭐';
-      await s.add('categories', { kind: newCat.kind, name, emoji: newCat.emoji, color: newCat.color }, dataScope);
+      newCat.group = form.group.value;
+      const cat = { kind: newCat.kind, name, emoji: newCat.emoji, color: newCat.color };
+      if (newCat.kind === 'expense') Object.assign(cat, { group: newCat.group, color: App.EXPENSE_GROUPS.find((g) => g.id === newCat.group).color });
+      await s.add('categories', cat, dataScope);
       App.ui.toast(t('saved'));
       render(el);
     };

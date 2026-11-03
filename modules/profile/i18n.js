@@ -2,7 +2,7 @@ App.i18n.add({
   th: {
     'nav.profile': 'โปรไฟล์ของฉัน', 'navShort.profile': 'โปรไฟล์',
     'prof.memberSince': 'สมาชิกตั้งแต่ {d}',
-    'prof.summary': 'สรุปการใช้งานส่วนตัว', 'prof.summarySub': 'ตั้งแต่เริ่มใช้งาน',
+    'prof.summary': 'สรุปการใช้งานส่วนตัว', 'prof.summarySub': 'ตั้งแต่เริ่มใช้งานถึงวันนี้',
     'prof.activities': 'กิจกรรมทั้งหมด', 'prof.hours': 'เวลาที่วางแผน', 'prof.done': 'ทำสำเร็จ',
     'prof.income': 'รายรับรวม', 'prof.expense': 'รายจ่ายรวม', 'prof.teams': 'ทีมที่เข้าร่วม',
     'prof.edit': 'แก้ไขโปรไฟล์', 'prof.emailFixed': 'อีเมลใช้เข้าสู่ระบบ เปลี่ยนไม่ได้',
@@ -14,7 +14,7 @@ App.i18n.add({
   en: {
     'nav.profile': 'My profile', 'navShort.profile': 'Profile',
     'prof.memberSince': 'Member since {d}',
-    'prof.summary': 'Your personal summary', 'prof.summarySub': 'since you started',
+    'prof.summary': 'Your personal summary', 'prof.summarySub': 'from your first day until today',
     'prof.activities': 'Activities', 'prof.hours': 'Planned time', 'prof.done': 'Completed',
     'prof.income': 'Total income', 'prof.expense': 'Total expense', 'prof.teams': 'Teams',
     'prof.edit': 'Edit profile', 'prof.emailFixed': 'Your email is your sign-in and can’t be changed',

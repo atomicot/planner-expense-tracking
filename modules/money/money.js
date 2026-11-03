@@ -23,6 +23,18 @@
     list = list.slice().sort((p, q) => q.date.localeCompare(p.date) || (q.createdAt || 0) - (p.createdAt || 0));
     const groups = groupBy(list, (x) => x.date);
 
+    // expense split by group (Needs / Wants / Savings / Other)
+    const expByGroup = App.EXPENSE_GROUPS.map((g) => ({
+      g, v: sum(inMonth.filter((x) => x.type === 'expense' && S().cat(x.categoryId).group === g.id), (x) => x.amount),
+    })).filter((r) => r.v > 0);
+    const splitCard = expense ? `
+      <div class="card group-split">
+        <div class="card-head"><h3>${t('money.split')}</h3><span class="sub">${App.i18n.money(expense)}</span></div>
+        <div class="split-bar" role="img" aria-label="${t('money.split')}">${expByGroup.map((r) => `<i style="flex:${r.v};background:${App.color(r.g.color)}" title="${esc(t(r.g.key))}"></i>`).join('')}</div>
+        <div class="split-legend">${expByGroup.map((r) => `<span class="li"><span class="sw" style="background:${App.color(r.g.color)}"></span>${esc(t(r.g.key))}
+          <b class="num">${App.i18n.money(r.v)}</b><span class="muted num">${Math.round((r.v / expense) * 100)}%</span></span>`).join('')}</div>
+      </div>` : '';
+
     const usedCats = [...new Set(inMonth.filter((x) => typeFilter === 'all' || x.type === typeFilter).map((x) => x.categoryId))]
       .map((id) => S().cat(id));
 
@@ -44,6 +56,7 @@
           <div class="v" style="color:${net >= 0 ? 'var(--income)' : 'var(--expense)'}">${net >= 0 ? '+' : '−'}${App.i18n.money(Math.abs(net))}</div>
           <div class="d">${income ? t('savedPct', { p: Math.round((net / income) * 100) }) : '&nbsp;'}</div></div>
       </div>
+      ${splitCard}
       <div class="filters">
         <div class="seg income-expense" data-filter>
           ${['all', 'expense', 'income'].map((v) => `<button data-v="${v}" class="${typeFilter === v ? 'active' : ''}">${t(v)}</button>`).join('')}

@@ -51,6 +51,25 @@
 .tl-now::before { content: ""; position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--expense); }
 .planner-grid.solo { grid-template-columns: minmax(0, 1fr); }
 
+/* badges on timeline blocks: priority emoji, repeat ↻ */
+.tl-block .badge { font-size: 11px; line-height: 1; flex: none; }
+
+/* activity form: Eisenhower 2×2 priority picker */
+.prio-grid { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); gap: 6px; align-items: stretch; }
+.prio-axis { font-size: 11px; color: var(--muted); text-align: center; align-self: end; }
+.prio-axis.side { align-self: center; text-align: right; padding-right: 2px; }
+.prio-btn {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 9px 11px; border-radius: 14px; text-align: left;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--text-2); transition: all .15s var(--ease);
+}
+.prio-btn .e { font-size: 15px; }
+.prio-btn .n { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.prio-btn .h { font-size: 11px; color: var(--muted); }
+.prio-btn:hover { border-color: var(--primary-soft); }
+.prio-btn.active { border-color: var(--primary); background: var(--primary-soft); }
+.prio-btn.active .n { color: var(--primary-ink); }
+.prio-btn:focus-visible { outline: 3px solid var(--primary-soft); outline-offset: 2px; }
+
 /* activity form: linked money lines */
 .subsection { margin-top: 6px; padding: 14px; border-radius: 18px; background: var(--tint); border: 1px dashed var(--line); }
 .subsection-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -68,4 +87,6 @@
   .day-pill .dn { font-size: 16px; }
   .line-item { grid-template-columns: auto minmax(0, 1fr) 36px; }
   .line-item .select { grid-column: 1 / -1; grid-row: 2; }
+  .row.when { flex-wrap: wrap; }
+  .row.when > .field:first-child { flex-basis: 100%; }
 }

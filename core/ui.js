@@ -55,5 +55,25 @@ App.ui = (() => {
     });
   }
 
-  return { toast, modal, confirm };
+  // Ask with several answers: choice(msg, [{ value, label, danger }]) → chosen value, or null if dismissed.
+  function choice(message, options) {
+    const t = App.i18n.t;
+    return new Promise((resolve) => {
+      let done = false;
+      const m = modal({
+        title: t('confirm'),
+        body: `<p style="margin:0 0 6px">${esc(message)}</p>`,
+        foot: `<div class="right" style="flex-wrap:wrap"><button class="btn ghost" data-no>${t('cancel')}</button>
+          ${options.map((o, i) => `<button class="btn ${o.danger ? 'danger' : 'soft'}" data-i="${i}">${esc(o.label)}</button>`).join('')}</div>`,
+        onMount(el, close) {
+          el.querySelector('[data-no]').onclick = () => { done = true; close(); resolve(null); };
+          el.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { done = true; close(); resolve(options[+b.dataset.i].value); });
+        },
+      });
+      const obs = new MutationObserver(() => { if (!document.body.contains(m.el)) { obs.disconnect(); if (!done) resolve(null); } });
+      obs.observe($('#modal-root'), { childList: true });
+    });
+  }
+
+  return { toast, modal, confirm, choice };
 })();
