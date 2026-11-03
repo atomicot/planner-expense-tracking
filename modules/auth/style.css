@@ -1,0 +1,23 @@
+/* Auth module */
+.auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+.auth-card {
+  width: 100%; max-width: 440px; background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(16px); border: 1px solid var(--line); border-radius: 28px; padding: 32px 28px; box-shadow: var(--shadow-lg);
+  animation: rise .5s var(--ease);
+}
+.auth-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.auth-card h1 { font-size: 24px; margin-bottom: 4px; letter-spacing: -.01em; }
+.auth-card .lead { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+.auth-tabs { width: 100%; margin-bottom: 20px; }
+.auth-tabs button { flex: 1; }
+.gender-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.gender-pick button {
+  border: 1.5px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: 12px 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; color: var(--text-2);
+  transition: all .2s var(--ease);
+}
+.gender-pick button .sw { width: 26px; height: 26px; border-radius: 50%; }
+.gender-pick button.active { border-color: var(--primary); background: var(--primary-soft); color: var(--primary-ink); font-weight: 600; }
+.mode-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 18px; justify-content: center; width: 100%; }
+.mode-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--income); }
+.form-error { color: var(--expense); font-size: 13px; min-height: 18px; margin: -4px 0 10px; }

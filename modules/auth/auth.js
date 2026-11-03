@@ -1,6 +1,8 @@
-/* Sign in / sign up screen. Picking a gender previews the theme live (male → sky blue, female → sakura pink). */
-App.auth = (() => {
-  const { esc, icons, $, $$ } = App.util;
+/* Auth module: sign in / sign up screen.
+   Picking a gender previews the theme live (male → sky blue, female → sakura pink). */
+(() => {
+  const { esc, $, $$ } = App.util;
+  const icons = App.icons;
   let tab = 'signup';
   let gender = 'female';
   let previousTheme = null;
@@ -96,5 +98,8 @@ App.auth = (() => {
     };
   }
 
-  return { render, setTab: (v) => { tab = v; } };
+  App.modules.register({
+    id: 'auth',
+    api: { render, setTab: (v) => { tab = v; } },
+  });
 })();

@@ -1,5 +1,5 @@
-/* Dashboard: where time and money went, for the current scope (personal or team) and range. */
-App.views.dashboard = (() => {
+/* Dashboard module page: where time and money went, for the current scope (personal or team) and range. */
+(() => {
   const { esc, $, $$, todayISO, addDays, startOfWeek, startOfMonth, endOfMonth, daysBetween, durationMin, sum, groupBy, cssVar, initials } = App.util;
   const S = () => App.store;
   let preset = 'week';
@@ -265,5 +265,11 @@ App.views.dashboard = (() => {
       <tbody>${rows.map((r) => `<tr>${r.map((c, i) => `<td class="${i ? 'r' : ''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`;
   }
 
-  return { render, destroy: destroyCharts };
+  App.modules.register({
+    id: 'dashboard',
+    nav: { order: 30, icon: 'chart' },
+    scoped: true,
+    render,
+    destroy: destroyCharts,
+  });
 })();

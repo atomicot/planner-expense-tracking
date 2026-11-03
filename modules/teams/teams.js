@@ -1,6 +1,7 @@
-/* Teams: create, join with a code, members, leave / delete. */
-App.views.teams = (() => {
-  const { esc, icons, $, $$, initials } = App.util;
+/* Teams module page: create, join with a code, members, leave / delete. */
+(() => {
+  const { esc, $, $$, initials } = App.util;
+  const icons = App.icons;
   const S = () => App.store;
 
   function errText(e) {
@@ -44,8 +45,8 @@ App.views.teams = (() => {
             <span class="nm2">${esc(tm.memberNames[u] || '—')}${u === me ? ` <span class="muted tiny">(${t('you')})</span>` : ''}${u === tm.ownerId ? ' 👑' : ''}</span>
             ${owner && u !== me ? `<button class="icon-btn plain" data-kick="${u}" aria-label="${t('team.remove')}">${icons.x}</button>` : ''}</div>`).join('')}</div>
           <div class="team-actions">
-            <button class="btn sm" data-open>${t('team.open')}</button>
-            <button class="btn ghost sm" data-dash>${t('nav.dashboard')}</button>
+            ${App.modules.has('planner') ? `<button class="btn sm" data-open>${t('team.open')}</button>` : ''}
+            ${App.modules.has('dashboard') ? `<button class="btn ghost sm" data-dash>${t('nav.dashboard')}</button>` : ''}
             ${owner ? `<button class="btn danger sm" data-del>${icons.trash}${t('delete')}</button>` : `<button class="btn ghost sm" data-leave>${t('team.leave')}</button>`}
           </div>
         </div>`;
@@ -78,8 +79,9 @@ App.views.teams = (() => {
     $$('[data-team]', el).forEach((card) => {
       const id = card.dataset.team;
       const tm = s.team(id);
-      $('[data-open]', card).onclick = () => { s.setScope({ type: 'team', id }); location.hash = '#/planner'; };
-      $('[data-dash]', card).onclick = () => { s.setScope({ type: 'team', id }); location.hash = '#/dashboard'; };
+      const open = $('[data-open]', card), dash = $('[data-dash]', card);
+      if (open) open.onclick = () => { s.setScope({ type: 'team', id }); location.hash = '#/planner'; };
+      if (dash) dash.onclick = () => { s.setScope({ type: 'team', id }); location.hash = '#/dashboard'; };
       const del = $('[data-del]', card);
       if (del) del.onclick = async () => {
         if (!(await App.ui.confirm(t('team.deleteConfirm', { name: tm.name }), { okText: t('delete'), danger: true }))) return;
@@ -99,5 +101,9 @@ App.views.teams = (() => {
     });
   }
 
-  return { render };
+  App.modules.register({
+    id: 'teams',
+    nav: { order: 40, icon: 'users' },
+    render,
+  });
 })();

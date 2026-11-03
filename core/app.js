@@ -1,21 +1,24 @@
-/* App shell: hash router, sidebar / bottom nav, scope switcher, re-render on data changes. */
+/* App shell: boots the core, loads modules, hash router, sidebar / bottom nav, scope switcher.
+   Navigation is built from the modules that registered a `nav` — nothing here names a feature. */
 App.main = (() => {
-  const { esc, icons, $, $$, initials, debounce } = App.util;
-  const routes = ['planner', 'money', 'dashboard', 'teams', 'settings'];
-  const navIcons = { planner: icons.calendar, money: icons.wallet, dashboard: icons.chart, teams: icons.users, settings: icons.settings };
+  const { esc, $, $$, initials, debounce } = App.util;
+  const icons = App.icons;
   let current = null;
 
+  const pages = () => App.modules.pages();
   const route = () => {
     const r = location.hash.replace(/^#\/?/, '').split('?')[0];
-    return routes.includes(r) ? r : 'planner';
+    const list = pages();
+    return (list.find((m) => m.id === r) || list[0]).id;
   };
+  const navLabel = (id, short) => App.i18n.t(short && App.i18n.has('navShort.' + id) ? 'navShort.' + id : 'nav.' + id);
 
   function renderShell() {
     const t = App.i18n.t;
     const u = App.store.user;
     const r = route();
-    const links = (short) => routes.map((k) => `
-      <a class="nav-link ${k === r ? 'active' : ''}" href="#/${k}" data-route="${k}">${navIcons[k]}<span>${t((short && k === 'money' ? 'navShort.' : 'nav.') + k)}</span></a>`).join('');
+    const links = (short) => pages().map((m) => `
+      <a class="nav-link ${m.id === r ? 'active' : ''}" href="#/${m.id}" data-route="${m.id}">${icons[m.nav.icon] || icons.logo}<span>${navLabel(m.id, short)}</span></a>`).join('');
     $('#root').innerHTML = `
       <div class="shell">
         <aside class="sidebar">
@@ -47,13 +50,12 @@ App.main = (() => {
     return `${t(k)}, ${App.store.user.name}`;
   }
 
-  function renderScope() {
+  function renderScope(mod) {
     const t = App.i18n.t;
     const s = App.store;
     const slot = $('#scope-slot');
     if (!slot) return;
-    const r = route();
-    if (r === 'teams' || r === 'settings') { slot.innerHTML = ''; return; }
+    if (!mod.scoped) { slot.innerHTML = ''; return; }
     const isTeam = s.isTeam();
     slot.innerHTML = `
       <div class="scope">
@@ -80,8 +82,8 @@ App.main = (() => {
         ${item({ type: 'personal', id: s.user.id }, t('personal'), esc(initials(s.user.name)))}
         ${s.teams.length ? `<div class="menu-sep"></div><div class="menu-label">${t('teams')}</div>` : ''}
         ${s.teams.map((tm) => item({ type: 'team', id: tm.id }, tm.name, esc(initials(tm.name)))).join('')}
-        <div class="menu-sep"></div>
-        <a class="menu-item" href="#/teams"><span class="avatar xs" style="background:var(--surface-2)">+</span>${t('team.manage')}</a>`;
+        ${App.modules.has('teams') ? `<div class="menu-sep"></div>
+        <a class="menu-item" href="#/teams"><span class="avatar xs" style="background:var(--surface-2)">+</span>${t('team.manage')}</a>` : ''}`;
       slot.querySelector('.scope').appendChild(menu);
       btn.setAttribute('aria-expanded', 'true');
       $$('[data-type]', menu).forEach((b) => b.onclick = () => {
@@ -95,18 +97,17 @@ App.main = (() => {
 
   async function renderView() {
     const r = route();
-    const t = App.i18n.t;
-    const view = App.views[r];
-    if (current && current !== view && current.destroy) current.destroy();
-    current = view;
+    const mod = App.modules.get(r);
+    if (current && current !== mod && current.destroy) current.destroy();
+    current = mod;
     $$('.nav-link').forEach((a) => a.classList.toggle('active', a.dataset.route === r));
-    $('#page-title').textContent = t('nav.' + r);
+    $('#page-title').textContent = navLabel(r);
     $('#greet').textContent = greeting();
-    document.title = `${t('nav.' + r)} · Pastel Planner`;
-    renderScope();
-    if (r !== 'teams' && r !== 'settings') await App.store.ensure();
+    document.title = `${navLabel(r)} · Pastel Planner`;
+    renderScope(mod);
+    if (mod.scoped) await App.store.ensure();
     if (route() !== r) return; // navigated away while loading
-    view.render($('#view'));
+    mod.render($('#view'));
   }
 
   const rerender = debounce(() => { if (App.store.user && $('#view')) renderView(); }, 60);
@@ -117,12 +118,13 @@ App.main = (() => {
     if (current && current.destroy) current.destroy();
     current = null;
     await App.store.signOut();
-    showAuth();
+    showAuth('signin');
   }
 
-  function showAuth() {
-    App.auth.setTab('signin');
-    App.auth.render($('#root'), start);
+  function showAuth(tab) {
+    const auth = App.api('auth');
+    auth.setTab(tab);
+    auth.render($('#root'), start);
   }
 
   function start() {
@@ -134,13 +136,14 @@ App.main = (() => {
   async function boot() {
     App.prefs.apply();
     $('#root').innerHTML = '';
+    await App.loadModules(App.MANIFEST);
+    if (!App.api('auth') || !pages().length) throw new Error('the auth module and at least one page module are required');
     let user = null;
     try { user = await App.store.init(); } catch (e) { console.error(e); }
     if (user) start();
     else {
       const hasProfiles = App.store.adapter.localProfiles && App.store.adapter.localProfiles().length;
-      App.auth.setTab(hasProfiles ? 'signin' : 'signup');
-      App.auth.render($('#root'), start);
+      showAuth(hasProfiles ? 'signin' : 'signup');
     }
 
     window.addEventListener('hashchange', () => { if (App.store.user) renderView(); });
@@ -153,7 +156,7 @@ App.main = (() => {
     App.store.on('theme', () => { if (App.store.user && $('.shell')) { renderShell(); renderView(); } });
   }
 
-  return { boot, rerender, route };
+  return { boot, rerender, route, logout };
 })();
 
 document.addEventListener('DOMContentLoaded', () => App.main.boot());

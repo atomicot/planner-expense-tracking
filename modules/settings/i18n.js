@@ -1,0 +1,26 @@
+App.i18n.add({
+  th: {
+    'nav.settings': 'ตั้งค่า',
+    'set.look': 'ธีมและการแสดงผล', 'set.lookDesc': 'เลือกโทนสีพาสเทลที่ชอบ', 'theme.sky': 'ฟ้า', 'theme.sakura': 'ชมพู', 'theme.mint': 'มิ้นต์', 'theme.lavender': 'ลาเวนเดอร์', 'theme.peach': 'พีช',
+    'mode.auto': 'อัตโนมัติ', 'mode.light': 'สว่าง', 'mode.dark': 'มืด',
+    'set.darkMode': 'โหมดมืด', 'set.language': 'ภาษา', 'set.profile': 'โปรไฟล์', 'set.categories': 'หมวดหมู่ของฉัน', 'set.categoriesDesc': 'เพิ่มหมวดหมู่เองได้ นอกเหนือจากหมวดเริ่มต้น',
+    'set.scope': 'ใช้กับ', 'kind.activity': 'กิจกรรม', 'kind.expense': 'รายจ่าย', 'kind.income': 'รายรับ', 'set.noCustom': 'ยังไม่มีหมวดหมู่ที่สร้างเอง', 'set.catNamePh': 'ชื่อหมวดหมู่',
+    'set.data': 'ข้อมูล', 'set.modeCloud': 'ข้อมูลซิงก์กับ Firebase และแชร์กับทีมได้แบบเรียลไทม์', 'set.modeLocal': 'ข้อมูลเก็บในเบราว์เซอร์นี้ อย่าลืมส่งออกสำรองไว้เป็นระยะ',
+    'set.storage': 'ที่เก็บข้อมูล', 'set.sample': 'ข้อมูลตัวอย่าง', 'set.sampleDesc': 'เพิ่มข้อมูล 2 สัปดาห์ลงใน {scope}', 'set.sampleBtn': 'เพิ่มตัวอย่าง',
+    'set.export': 'สำรอง / กู้คืน', 'set.exportDesc': 'ไฟล์ JSON ของขอบเขตที่เลือก', 'set.clear': 'ล้างข้อมูล', 'set.clearDesc': 'ลบกิจกรรมและรายการเงินทั้งหมดใน {scope}',
+    'set.clearBtn': 'ล้าง', 'set.deleteCatConfirm': 'ลบหมวดหมู่นี้? รายการเดิมจะยังอยู่', 'set.sampleDone': 'เพิ่มข้อมูลตัวอย่างแล้ว ✿',
+    'set.clearConfirm': 'ลบข้อมูลทั้งหมดใน "{scope}"? ย้อนกลับไม่ได้', 'set.imported': 'นำเข้า {n} รายการแล้ว', 'set.importError': 'ไฟล์ไม่ถูกต้อง',
+  },
+  en: {
+    'nav.settings': 'Settings',
+    'set.look': 'Theme & display', 'set.lookDesc': 'Pick your favourite pastel', 'theme.sky': 'Sky', 'theme.sakura': 'Sakura', 'theme.mint': 'Mint', 'theme.lavender': 'Lavender', 'theme.peach': 'Peach',
+    'mode.auto': 'Auto', 'mode.light': 'Light', 'mode.dark': 'Dark',
+    'set.darkMode': 'Dark mode', 'set.language': 'Language', 'set.profile': 'Profile', 'set.categories': 'My categories', 'set.categoriesDesc': 'Add your own categories on top of the defaults',
+    'set.scope': 'Applies to', 'kind.activity': 'Activity', 'kind.expense': 'Expense', 'kind.income': 'Income', 'set.noCustom': 'No custom categories yet', 'set.catNamePh': 'Category name',
+    'set.data': 'Data', 'set.modeCloud': 'Data syncs with Firebase and is shared with your teams in real time.', 'set.modeLocal': 'Data is stored in this browser. Export a backup now and then.',
+    'set.storage': 'Storage', 'set.sample': 'Sample data', 'set.sampleDesc': 'Adds two weeks of data to {scope}', 'set.sampleBtn': 'Add sample',
+    'set.export': 'Backup / restore', 'set.exportDesc': 'JSON file of the selected scope', 'set.clear': 'Clear data', 'set.clearDesc': 'Deletes every activity and money item in {scope}',
+    'set.clearBtn': 'Clear', 'set.deleteCatConfirm': 'Delete this category? Existing items stay.', 'set.sampleDone': 'Sample data added ✿',
+    'set.clearConfirm': 'Delete all data in "{scope}"? This can’t be undone.', 'set.imported': 'Imported {n} items', 'set.importError': 'That file isn’t a valid backup',
+  },
+});

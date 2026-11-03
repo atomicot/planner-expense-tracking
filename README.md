@@ -33,29 +33,79 @@
 3. **Build → Firestore Database → Create database** (เลือก production mode และ region ใกล้ ๆ เช่น `asia-southeast1`)
 4. **Firestore → Rules** → คัดลอกเนื้อหาไฟล์ [`firestore.rules`](firestore.rules) ไปวางแทนทั้งหมด → **Publish**
 5. **Project settings (⚙️) → Your apps → Web (</>)** → ลงทะเบียนแอป → คัดลอก `firebaseConfig`
-6. เปิด [`js/firebase-config.js`](js/firebase-config.js) แล้ววางค่าลงใน `window.FIREBASE_CONFIG = { ... }`
+6. เปิด [`config/firebase-config.js`](config/firebase-config.js) แล้ววางค่าลงใน `window.FIREBASE_CONFIG = { ... }`
 7. เปิดแอปผ่านเซิร์ฟเวอร์ (`http://localhost:...`) หรือ deploy ขึ้น Firebase Hosting / Netlify / GitHub Pages
    - ถ้า deploy บนโดเมนอื่น ให้เพิ่มโดเมนนั้นใน **Authentication → Settings → Authorized domains**
 8. สมัครสมาชิกใหม่ (บัญชีในโหมด Local จะไม่ย้ายไปอัตโนมัติ ใช้ ตั้งค่า → ส่งออก/นำเข้า เพื่อย้ายข้อมูล)
 
 **ทดสอบทีม**: เปิด 2 เบราว์เซอร์ (หรือหน้าต่างไม่ระบุตัวตน) → สมัคร 2 บัญชี → บัญชีแรกสร้างทีมแล้วคัดลอกรหัสเชิญ → บัญชีที่สองกด "เข้าร่วมด้วยรหัส" → เพิ่มกิจกรรมจากฝั่งหนึ่ง แล้วอีกฝั่งจะเห็นทันที
 
-## โครงสร้างไฟล์
+**ทดสอบโดยไม่แตะข้อมูลบน Firebase**: เปิด `http://localhost:5173/?mode=local` แอปจะใช้ Local Storage แม้จะใส่ config ของ Firebase ไว้แล้ว
+
+## โครงสร้างแบบ module
+แอปแบ่งเป็น **core** (ส่วนกลางที่ทุก module ใช้ร่วมกัน) และ **module** ตามฟีเจอร์ แต่ละ module อยู่ในโฟลเดอร์ของตัวเอง มีทั้ง JS, CSS และข้อความแปลภาษาของตัวเอง แก้ module ไหนก็แก้แค่ในโฟลเดอร์นั้น
+
 ```
-index.html               โครงหน้า โหลดฟอนต์ Chart.js และสคริปต์
-css/styles.css           design tokens, 5 ธีม + โหมดมืด, คอมโพเนนต์, responsive
-js/util.js               ตัวช่วยวันที่/เวลา, DOM, ไอคอน, modal, toast
-js/i18n.js               ข้อความไทย/อังกฤษ และรูปแบบเงิน/วันที่
-js/store.js              ตัวกลางข้อมูล (cache + events), หมวดหมู่เริ่มต้น, ธีม, preferences
-js/store-local.js        adapter สำหรับ Local Storage
-js/store-firebase.js     adapter สำหรับ Firebase Auth + Firestore (โหลด SDK เมื่อมี config)
-js/firebase-config.js    ใส่ config ของ Firebase ที่นี่ (เว้นว่าง = Local)
-js/auth.js               หน้าสมัคร/เข้าสู่ระบบ
-js/forms.js              หน้าต่างเพิ่ม/แก้ไขกิจกรรมและรายการเงิน
-js/views/*.js            planner, money, dashboard, teams, settings
-js/app.js                router, sidebar/bottom nav, ตัวสลับ ส่วนตัว/ทีม
-firestore.rules          กฎความปลอดภัยของ Firestore
+index.html                  โหลด core แล้ว core จะโหลด module ตาม manifest
+config/firebase-config.js   ใส่ config ของ Firebase ที่นี่ (เว้นว่าง = Local)
+firestore.rules             กฎความปลอดภัยของ Firestore
+
+core/                       ส่วนกลาง: แก้ที่นี่จะกระทบทุก module
+  css/base.css              design tokens, 5 ธีม + โหมดมืด, ปุ่ม/ฟอร์ม/การ์ด/modal/toast
+  css/shell.css             sidebar, top bar, ตัวสลับ ส่วนตัว/ทีม, bottom nav
+  util.js                   ตัวช่วยวันที่/เวลา/DOM
+  icons.js                  ไอคอน (App.icons)
+  i18n.js                   ระบบแปลภาษา + ข้อความที่ใช้ร่วมกัน + หมวดหมู่
+  ui.js                     modal, confirm, toast
+  data.js                   สีหมวดหมู่, หมวดหมู่เริ่มต้น, ธีม
+  store.js                  ตัวกลางข้อมูล (cache + events) และ preferences
+  adapters/local.js         เก็บข้อมูลใน Local Storage
+  adapters/firebase.js      Firebase Auth + Firestore
+  components.js             ตัวเลือกหมวดหมู่ (ใช้ทั้งฟอร์มกิจกรรมและฟอร์มเงิน)
+  modules.js                ทะเบียน module + ตัวโหลด
+  app.js                    router และ shell (สร้างเมนูจาก module ที่โหลดอยู่)
+
+modules/
+  manifest.js               รายชื่อ module ที่จะโหลด และไฟล์ของแต่ละ module
+  auth/                     หน้าสมัคร/เข้าสู่ระบบ
+  planner/                  แพลนเนอร์ + ฟอร์มกิจกรรม (activity-form.js)
+  money/                    รายรับ–รายจ่าย + ฟอร์มรายการเงิน (transaction-form.js)
+  dashboard/                แดชบอร์ดและกราฟ
+  teams/                    สร้าง/เข้าร่วม/จัดการทีม
+  settings/                 ตั้งค่า + ข้อมูลตัวอย่าง (sample-data.js) + สำรอง/กู้คืน (backup.js)
 ```
+
+ทุกโฟลเดอร์ใน `modules/` มีไฟล์แบบเดียวกัน:
+- `style.css`: หน้าตาของ module นั้น (โหลดอัตโนมัติ)
+- `i18n.js`: ข้อความไทย/อังกฤษของ module นั้น
+- `<ชื่อ>.js`: โค้ดหน้าเพจ และลงทะเบียนตัวเองด้วย `App.modules.register({...})`
+
+### แก้ไข module
+- เปลี่ยนหน้าตา: แก้ `modules/<ชื่อ>/style.css`
+- เปลี่ยนข้อความ: แก้ `modules/<ชื่อ>/i18n.js`
+- เปลี่ยนการทำงาน: แก้ไฟล์ `.js` ในโฟลเดอร์นั้น
+- ถ้าต้องแก้ส่วนที่ทุกหน้าใช้ร่วมกัน (สีธีม, ปุ่ม, modal, การเก็บข้อมูล) ให้แก้ใน `core/`
+
+### ปิด/เพิ่ม module
+- **ปิด**: ลบบรรทัดของ module นั้นใน `modules/manifest.js` เมนูจะหายไปเอง และ module อื่นยังทำงานได้ เช่น ปิด `money` แล้วแพลนเนอร์จะซ่อนการ์ดรายรับ–รายจ่ายให้เอง (`auth` ปิดไม่ได้)
+- **เพิ่ม**: สร้าง `modules/<ชื่อใหม่>/` ที่มี `style.css`, `i18n.js` และไฟล์ JS ที่เรียก
+
+```js
+App.modules.register({
+  id: 'notes',                              // ต้องตรงกับชื่อโฟลเดอร์
+  nav: { order: 50, icon: 'calendar' },     // ตำแหน่งในเมนู + ชื่อไอคอนจาก core/icons.js
+  scoped: true,                             // true = ใช้ตัวสลับ ส่วนตัว/ทีม และโหลดข้อมูลให้ก่อน render
+  render(el) { el.innerHTML = '...'; },     // วาดหน้า (ถูกเรียกใหม่เมื่อข้อมูล/ธีม/ภาษาเปลี่ยน)
+  destroy() {},                             // (ไม่บังคับ) เก็บกวาดเมื่อออกจากหน้า
+  api: {},                                  // (ไม่บังคับ) ฟังก์ชันที่ module อื่นเรียกผ่าน App.api('notes')
+});
+```
+แล้วเพิ่มบรรทัด `{ id: 'notes', files: ['i18n.js', 'notes.js'] }` ใน `modules/manifest.js` และใส่ชื่อเมนูใน `i18n.js` ด้วยคีย์ `nav.notes`
+
+### กติกาการเชื่อมกันระหว่าง module
+- module คุยกับข้อมูลผ่าน `App.store` เท่านั้น ห้ามแตะ localStorage หรือ Firestore ตรง ๆ
+- module ไม่เรียกไฟล์ข้างในของ module อื่น ให้เรียกผ่าน `App.api('<id>')` ซึ่งจะได้ `null` ถ้า module นั้นไม่ได้โหลด จึงต้องเช็คก่อนใช้
+- ไฟล์หลายไฟล์ใน module เดียวกันแชร์ของกันผ่าน `App.parts.<id>` (ใช้ภายใน module นั้นเท่านั้น)
 
 ## โครงสร้างข้อมูล (Firestore)
 ```

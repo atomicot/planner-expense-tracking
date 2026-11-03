@@ -1,6 +1,8 @@
-/* Money: month summary, filters, transactions grouped by day. */
-App.views.money = (() => {
-  const { esc, icons, $, $$, todayISO, addMonths, startOfMonth, endOfMonth, sum, groupBy } = App.util;
+/* Money module page: month summary, filters, transactions grouped by day. */
+(() => {
+  const { esc, $, $$, todayISO, addMonths, startOfMonth, endOfMonth, sum, groupBy } = App.util;
+  const icons = App.icons;
+  const { openTransaction, txRow, bindTxRows } = App.parts.money;
   const S = () => App.store;
   let month = startOfMonth(todayISO());
   let typeFilter = 'all';
@@ -44,7 +46,7 @@ App.views.money = (() => {
       </div>
       <div class="filters">
         <div class="seg income-expense" data-filter>
-          ${['all', 'expense', 'income'].map((v) => `<button data-v="${v}" class="${typeFilter === v ? 'active' : ''}">${t(v === 'all' ? 'all' : v)}</button>`).join('')}
+          ${['all', 'expense', 'income'].map((v) => `<button data-v="${v}" class="${typeFilter === v ? 'active' : ''}">${t(v)}</button>`).join('')}
         </div>
         <div class="chips">${usedCats.map((c) => `<button class="chip ${catFilter === c.id ? 'active' : ''}" data-cf="${c.id}"><span>${c.emoji}</span>${esc(S().catName(c))}</button>`).join('')}</div>
       </div>
@@ -53,7 +55,7 @@ App.views.money = (() => {
           const dn = sum(xs, (x) => (x.type === 'income' ? x.amount : -x.amount));
           return `<div class="day-group">
             <div class="day-group-head"><b>${App.i18n.date(day, 'weekdayLong')}</b><span class="num">${dn >= 0 ? '+' : '−'}${App.i18n.money(Math.abs(dn))}</span></div>
-            <div class="money-list">${xs.map((x) => App.forms.txRow(x)).join('')}</div></div>`;
+            <div class="money-list">${xs.map((x) => txRow(x)).join('')}</div></div>`;
         }).join('') : `<div class="empty"><span class="em">🌷</span>${t('money.emptyMonth')}<br><br>
           <button class="btn soft sm" data-add>${icons.plus}${t('tx.new')}</button></div>`}
       </div>
@@ -64,13 +66,15 @@ App.views.money = (() => {
     $$('[data-filter] button', el).forEach((b) => b.onclick = () => { typeFilter = b.dataset.v; catFilter = null; render(el); });
     $$('[data-cf]', el).forEach((b) => b.onclick = () => { catFilter = catFilter === b.dataset.cf ? null : b.dataset.cf; render(el); });
     const defDate = todayISO() >= from && todayISO() <= to ? todayISO() : from;
-    $$('[data-add]', el).forEach((b) => b.onclick = () => App.forms.transaction({ date: defDate, type: typeFilter === 'income' ? 'income' : 'expense' }));
-    $$('[data-tx]', el).forEach((r) => {
-      const open = () => App.forms.transaction({ tx: d.transactions.find((x) => x.id === r.dataset.tx) });
-      r.onclick = open;
-      r.onkeydown = (e) => { if (e.key === 'Enter') open(); };
-    });
+    $$('[data-add]', el).forEach((b) => b.onclick = () => openTransaction({ date: defDate, type: typeFilter === 'income' ? 'income' : 'expense' }));
+    bindTxRows(el);
   }
 
-  return { render };
+  App.modules.register({
+    id: 'money',
+    nav: { order: 20, icon: 'wallet' },
+    scoped: true,
+    render,
+    api: { openTransaction, txRow, bindTxRows },
+  });
 })();
