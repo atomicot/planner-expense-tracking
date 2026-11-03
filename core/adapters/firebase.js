@@ -32,7 +32,7 @@ App.FirebaseAdapter = (() => {
       const snap = await ref.get();
       if (snap.exists) return { id: fbUser.uid, ...snap.data() };
       // Profile missing (e.g. created from the console) → create a default one.
-      const p = { name: fbUser.displayName || fbUser.email.split('@')[0], email: fbUser.email, gender: 'unspecified', theme: 'lavender', mode: 'auto', lang: App.prefs.get().lang, createdAt: Date.now() };
+      const p = { name: fbUser.displayName || fbUser.email.split('@')[0], email: fbUser.email, theme: App.DEFAULT_THEME, mode: 'auto', lang: App.prefs.get().lang, createdAt: Date.now() };
       await ref.set(p);
       return { id: fbUser.uid, ...p };
     }
@@ -56,10 +56,10 @@ App.FirebaseAdapter = (() => {
           });
         });
       },
-      async signUp({ name, email, password, gender }) {
+      async signUp({ name, email, password }) {
         const cred = await auth.createUserWithEmailAndPassword(email.trim(), password);
         await cred.user.updateProfile({ displayName: name.trim() });
-        const p = { name: name.trim(), email: email.trim().toLowerCase(), gender, theme: App.themeForGender(gender), mode: 'auto', lang: App.prefs.get().lang, createdAt: Date.now() };
+        const p = { name: name.trim(), email: email.trim().toLowerCase(), theme: App.DEFAULT_THEME, mode: 'auto', lang: App.prefs.get().lang, createdAt: Date.now() };
         await fs.collection('users').doc(cred.user.uid).set(p);
         return { id: cred.user.uid, ...p };
       },

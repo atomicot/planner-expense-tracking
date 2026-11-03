@@ -22,12 +22,14 @@ App.main = (() => {
     $('#root').innerHTML = `
       <div class="shell">
         <aside class="sidebar">
-          <div class="brand"><span class="brand-mark">${icons.logo}</span>Pastel Planner</div>
+          <div class="brand"><span class="brand-mark">${icons.logo}</span>${App.NAME}</div>
           <nav>${links(false)}</nav>
           <div class="spacer"></div>
           <div class="user-card">
-            <span class="avatar">${esc(initials(u.name))}</span>
-            <div class="meta"><div class="name">${esc(u.name)}</div><div class="mail">${esc(u.email)}</div></div>
+            <${App.modules.has('profile') ? 'a href="#/profile"' : 'div'} class="user-link">
+              <span class="avatar">${esc(initials(u.name))}</span>
+              <div class="meta"><div class="name">${esc(u.name)}</div><div class="mail">${esc(u.email)}</div></div>
+            </${App.modules.has('profile') ? 'a' : 'div'}>
             <button class="icon-btn plain" data-logout title="${t('signOut')}" aria-label="${t('signOut')}">${icons.logout}</button>
           </div>
         </aside>
@@ -103,7 +105,7 @@ App.main = (() => {
     $$('.nav-link').forEach((a) => a.classList.toggle('active', a.dataset.route === r));
     $('#page-title').textContent = navLabel(r);
     $('#greet').textContent = greeting();
-    document.title = `${navLabel(r)} · Pastel Planner`;
+    document.title = `${navLabel(r)} · ${App.NAME}`;
     renderScope(mod);
     if (mod.scoped) await App.store.ensure();
     if (route() !== r) return; // navigated away while loading
@@ -156,7 +158,10 @@ App.main = (() => {
     App.store.on('theme', () => { if (App.store.user && $('.shell')) { renderShell(); renderView(); } });
   }
 
-  return { boot, rerender, route, logout };
+  // Redraw the shell and current page now (e.g. after the user's name changes).
+  function refresh() { if (App.store.user && $('.shell')) { renderShell(); renderView(); } }
+
+  return { boot, rerender, refresh, route, logout };
 })();
 
 document.addEventListener('DOMContentLoaded', () => App.main.boot());

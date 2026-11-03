@@ -1,0 +1,26 @@
+App.i18n.add({
+  th: {
+    'nav.profile': 'โปรไฟล์ของฉัน', 'navShort.profile': 'โปรไฟล์',
+    'prof.memberSince': 'สมาชิกตั้งแต่ {d}',
+    'prof.summary': 'สรุปการใช้งานส่วนตัว', 'prof.summarySub': 'ตั้งแต่เริ่มใช้งาน',
+    'prof.activities': 'กิจกรรมทั้งหมด', 'prof.hours': 'เวลาที่วางแผน', 'prof.done': 'ทำสำเร็จ',
+    'prof.income': 'รายรับรวม', 'prof.expense': 'รายจ่ายรวม', 'prof.teams': 'ทีมที่เข้าร่วม',
+    'prof.edit': 'แก้ไขโปรไฟล์', 'prof.emailFixed': 'อีเมลใช้เข้าสู่ระบบ เปลี่ยนไม่ได้',
+    'prof.myTeams': 'ทีมของฉัน', 'prof.noTeams': 'ยังไม่ได้อยู่ในทีมใด', 'prof.owner': 'เจ้าของ', 'prof.memberRole': 'สมาชิก', 'prof.membersN': '{n} คน',
+    'prof.manageTeams': 'จัดการทีม',
+    'prof.account': 'บัญชีและการตั้งค่า', 'prof.theme': 'ธีม', 'prof.language': 'ภาษา', 'prof.mode': 'โหมดสี',
+    'prof.storage': 'ที่เก็บข้อมูล', 'prof.userId': 'รหัสผู้ใช้', 'prof.openSettings': 'ไปที่ตั้งค่า',
+  },
+  en: {
+    'nav.profile': 'My profile', 'navShort.profile': 'Profile',
+    'prof.memberSince': 'Member since {d}',
+    'prof.summary': 'Your personal summary', 'prof.summarySub': 'since you started',
+    'prof.activities': 'Activities', 'prof.hours': 'Planned time', 'prof.done': 'Completed',
+    'prof.income': 'Total income', 'prof.expense': 'Total expense', 'prof.teams': 'Teams',
+    'prof.edit': 'Edit profile', 'prof.emailFixed': 'Your email is your sign-in and can’t be changed',
+    'prof.myTeams': 'My teams', 'prof.noTeams': 'You’re not in any team yet', 'prof.owner': 'Owner', 'prof.memberRole': 'Member', 'prof.membersN': '{n} people',
+    'prof.manageTeams': 'Manage teams',
+    'prof.account': 'Account & preferences', 'prof.theme': 'Theme', 'prof.language': 'Language', 'prof.mode': 'Colour mode',
+    'prof.storage': 'Storage', 'prof.userId': 'User ID', 'prof.openSettings': 'Open settings',
+  },
+});

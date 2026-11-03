@@ -1,9 +1,8 @@
 App.i18n.add({
   th: {
     'nav.settings': 'ตั้งค่า',
-    'set.look': 'ธีมและการแสดงผล', 'set.lookDesc': 'เลือกโทนสีพาสเทลที่ชอบ', 'theme.sky': 'ฟ้า', 'theme.sakura': 'ชมพู', 'theme.mint': 'มิ้นต์', 'theme.lavender': 'ลาเวนเดอร์', 'theme.peach': 'พีช',
-    'mode.auto': 'อัตโนมัติ', 'mode.light': 'สว่าง', 'mode.dark': 'มืด',
-    'set.darkMode': 'โหมดมืด', 'set.language': 'ภาษา', 'set.profile': 'โปรไฟล์', 'set.categories': 'หมวดหมู่ของฉัน', 'set.categoriesDesc': 'เพิ่มหมวดหมู่เองได้ นอกเหนือจากหมวดเริ่มต้น',
+    'set.look': 'ธีมและการแสดงผล', 'set.lookDesc': 'เลือกโทนสีพาสเทลที่ชอบ',
+    'set.darkMode': 'โหมดมืด', 'set.language': 'ภาษา', 'set.categories': 'หมวดหมู่ของฉัน', 'set.categoriesDesc': 'เพิ่มหมวดหมู่เองได้ นอกเหนือจากหมวดเริ่มต้น',
     'set.scope': 'ใช้กับ', 'kind.activity': 'กิจกรรม', 'kind.expense': 'รายจ่าย', 'kind.income': 'รายรับ', 'set.noCustom': 'ยังไม่มีหมวดหมู่ที่สร้างเอง', 'set.catNamePh': 'ชื่อหมวดหมู่',
     'set.data': 'ข้อมูล', 'set.modeCloud': 'ข้อมูลซิงก์กับ Firebase และแชร์กับทีมได้แบบเรียลไทม์', 'set.modeLocal': 'ข้อมูลเก็บในเบราว์เซอร์นี้ อย่าลืมส่งออกสำรองไว้เป็นระยะ',
     'set.storage': 'ที่เก็บข้อมูล', 'set.sample': 'ข้อมูลตัวอย่าง', 'set.sampleDesc': 'เพิ่มข้อมูล 2 สัปดาห์ลงใน {scope}', 'set.sampleBtn': 'เพิ่มตัวอย่าง',
@@ -13,9 +12,8 @@ App.i18n.add({
   },
   en: {
     'nav.settings': 'Settings',
-    'set.look': 'Theme & display', 'set.lookDesc': 'Pick your favourite pastel', 'theme.sky': 'Sky', 'theme.sakura': 'Sakura', 'theme.mint': 'Mint', 'theme.lavender': 'Lavender', 'theme.peach': 'Peach',
-    'mode.auto': 'Auto', 'mode.light': 'Light', 'mode.dark': 'Dark',
-    'set.darkMode': 'Dark mode', 'set.language': 'Language', 'set.profile': 'Profile', 'set.categories': 'My categories', 'set.categoriesDesc': 'Add your own categories on top of the defaults',
+    'set.look': 'Theme & display', 'set.lookDesc': 'Pick your favourite pastel',
+    'set.darkMode': 'Dark mode', 'set.language': 'Language', 'set.categories': 'My categories', 'set.categoriesDesc': 'Add your own categories on top of the defaults',
     'set.scope': 'Applies to', 'kind.activity': 'Activity', 'kind.expense': 'Expense', 'kind.income': 'Income', 'set.noCustom': 'No custom categories yet', 'set.catNamePh': 'Category name',
     'set.data': 'Data', 'set.modeCloud': 'Data syncs with Firebase and is shared with your teams in real time.', 'set.modeLocal': 'Data is stored in this browser. Export a backup now and then.',
     'set.storage': 'Storage', 'set.sample': 'Sample data', 'set.sampleDesc': 'Adds two weeks of data to {scope}', 'set.sampleBtn': 'Add sample',

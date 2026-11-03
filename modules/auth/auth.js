@@ -1,10 +1,9 @@
 /* Auth module: sign in / sign up screen.
-   Picking a gender previews the theme live (male → sky blue, female → sakura pink). */
+   Sign-up shows the default theme new accounts get (sky blue); sign-in shows the last theme used on this device. */
 (() => {
-  const { esc, $, $$ } = App.util;
+  const { $, $$ } = App.util;
   const icons = App.icons;
   let tab = 'signup';
-  let gender = 'female';
   let previousTheme = null;
 
   function errorText(e) {
@@ -23,20 +22,13 @@
     const lang = App.prefs.get().lang;
     const isUp = tab === 'signup';
     if (!previousTheme) previousTheme = App.prefs.get().theme;
-    if (isUp) document.documentElement.dataset.theme = App.themeForGender(gender);
-    else document.documentElement.dataset.theme = previousTheme;
-
-    const genders = [
-      { v: 'male', label: t('male'), color: App.THEMES.sky.primary },
-      { v: 'female', label: t('female'), color: App.THEMES.sakura.primary },
-      { v: 'unspecified', label: t('unspecified'), color: App.THEMES.lavender.primary },
-    ];
+    document.documentElement.dataset.theme = isUp ? App.DEFAULT_THEME : previousTheme;
 
     root.innerHTML = `
       <div class="auth-wrap">
         <form class="auth-card" novalidate>
           <div class="auth-top">
-            <div class="brand"><span class="brand-mark">${icons.logo}</span>Pastel Planner</div>
+            <div class="brand"><span class="brand-mark">${icons.logo}</span>${App.NAME}</div>
             <div class="seg" role="group" aria-label="language">
               <button type="button" data-lang="th" class="${lang === 'th' ? 'active' : ''}">ไทย</button>
               <button type="button" data-lang="en" class="${lang === 'en' ? 'active' : ''}">EN</button>
@@ -54,11 +46,6 @@
             <input id="f-email" class="input" name="email" type="email" autocomplete="email" placeholder="you@example.com" required></div>
           <div class="field"><label for="f-pw">${t('password')}</label>
             <input id="f-pw" class="input" name="password" type="password" autocomplete="${isUp ? 'new-password' : 'current-password'}" placeholder="••••••" minlength="6" required></div>
-          ${isUp ? `<div class="field"><span class="label">${t('gender')} <span class="muted small">· ${t('auth.genderHint')}</span></span>
-            <div class="gender-pick">${genders.map((g) => `
-              <button type="button" data-gender="${g.v}" class="${gender === g.v ? 'active' : ''}">
-                <span class="sw" style="background:${g.color}"></span>${esc(g.label)}</button>`).join('')}
-            </div></div>` : ''}
           <div class="form-error" role="alert"></div>
           <button class="btn block" type="submit">${isUp ? t('auth.create') : t('signIn')}</button>
           <div class="mode-pill"><span class="dot"></span>${App.store.mode === 'firebase' ? t('mode.cloud') : t('mode.local')}</div>
@@ -68,11 +55,6 @@
     const form = $('form', root);
     $$('[data-tab]', root).forEach((b) => b.onclick = () => { tab = b.dataset.tab; render(root, onDone); });
     $$('[data-lang]', root).forEach((b) => b.onclick = () => { App.prefs.set({ lang: b.dataset.lang }, { persist: false }); render(root, onDone); });
-    $$('[data-gender]', root).forEach((b) => b.onclick = () => {
-      gender = b.dataset.gender;
-      $$('[data-gender]', root).forEach((x) => x.classList.toggle('active', x === b));
-      document.documentElement.dataset.theme = App.themeForGender(gender);
-    });
 
     form.onsubmit = async (e) => {
       e.preventDefault();
@@ -86,7 +68,7 @@
       const btn = $('button[type=submit]', root);
       btn.disabled = true;
       try {
-        if (isUp) await App.store.signUp({ ...data, gender });
+        if (isUp) await App.store.signUp(data);
         else await App.store.signIn(data);
         previousTheme = null;
         onDone();

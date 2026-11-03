@@ -29,17 +29,6 @@
             <div class="seg" data-lang><button data-v="th" class="${p.lang === 'th' ? 'active' : ''}">ไทย</button><button data-v="en" class="${p.lang === 'en' ? 'active' : ''}">English</button></div></div>
         </div>
 
-        <form class="card" data-profile>
-          <h3>🙂 ${t('set.profile')}</h3><p class="desc">${esc(u.email)}</p>
-          <div class="field"><label for="p-name">${t('name')}</label><input id="p-name" class="input" name="name" value="${esc(u.name)}" maxlength="60"></div>
-          <div class="field"><label for="p-gender">${t('gender')}</label>
-            <select id="p-gender" class="select" name="gender">${['male', 'female', 'unspecified'].map((g) => `<option value="${g}" ${u.gender === g ? 'selected' : ''}>${t(g)}</option>`).join('')}</select></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn" type="submit">${t('save')}</button>
-            <button class="btn ghost" type="button" data-logout>${icons.logout}${t('signOut')}</button>
-          </div>
-        </form>
-
         <div class="card">
           <h3>🏷️ ${t('set.categories')}</h3><p class="desc">${t('set.categoriesDesc')}</p>
           <div class="field"><label for="s-scope">${t('set.scope')}</label>
@@ -81,18 +70,6 @@
     $$('[data-theme]', el).forEach((b) => b.onclick = () => App.prefs.set({ theme: b.dataset.theme }));
     $$('[data-mode] button', el).forEach((b) => b.onclick = () => App.prefs.set({ mode: b.dataset.v }));
     $$('[data-lang] button', el).forEach((b) => b.onclick = () => App.prefs.set({ lang: b.dataset.v }));
-
-    // profile
-    $('[data-profile]', el).onsubmit = async (e) => {
-      e.preventDefault();
-      const name = e.target.name.value.trim();
-      if (!name) return;
-      await s.updateProfile({ name, gender: e.target.gender.value });
-      App.ui.toast(t('saved'));
-      App.main.rerender();
-      document.querySelectorAll('.user-card .name').forEach((n) => { n.textContent = name; });
-    };
-    $('[data-logout]', el).onclick = () => App.main.logout();
 
     // scope for categories & data
     $('[data-scope-select]', el).onchange = async (e) => {

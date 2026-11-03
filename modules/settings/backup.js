@@ -5,14 +5,14 @@ App.parts.settings.exportJSON = function exportJSON(scope) {
   const s = App.store;
   const d = s.data(scope);
   const payload = {
-    app: 'pastel-planner', version: 1, exportedAt: new Date().toISOString(),
+    app: 'uri-planner', version: 1, exportedAt: new Date().toISOString(),
     scope: { type: scope.type, name: s.scopeName(scope) },
     activities: d.activities, transactions: d.transactions, categories: d.categories,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `pastel-planner-${scope.type}-${App.util.todayISO()}.json`;
+  a.download = `uri-planner-${scope.type}-${App.util.todayISO()}.json`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 };
@@ -22,7 +22,7 @@ App.parts.settings.importJSON = async function importJSON(file, scope) {
   if (!file) return;
   try {
     const data = JSON.parse(await file.text());
-    if (data.app !== 'pastel-planner') throw new Error('format');
+    if (!['uri-planner', 'pastel-planner'].includes(data.app)) throw new Error('format');
     const s = App.store;
     const clean = (arr) => (Array.isArray(arr) ? arr.filter((x) => x && typeof x.id === 'string') : []);
     const acts = clean(data.activities), txs = clean(data.transactions), cats = clean(data.categories);

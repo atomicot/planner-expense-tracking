@@ -66,12 +66,12 @@ App.LocalAdapter = (() => {
       async init() {
         return db.session && db.profiles[db.session] ? { ...db.profiles[db.session] } : null;
       },
-      async signUp({ name, email, password, gender }) {
+      async signUp({ name, email, password }) {
         email = email.trim().toLowerCase();
         if (Object.values(db.profiles).some((p) => p.email === email)) throw err('auth/email-already-in-use');
         const id = App.util.uid();
         const salt = App.util.uid(8);
-        db.profiles[id] = { id, name: name.trim(), email, gender, theme: App.themeForGender(gender), mode: 'auto', lang: App.prefs.get().lang, createdAt: Date.now() };
+        db.profiles[id] = { id, name: name.trim(), email, theme: App.DEFAULT_THEME, mode: 'auto', lang: App.prefs.get().lang, createdAt: Date.now() };
         db.creds[id] = { salt, hash: await hash(password, salt) };
         db.session = id;
         save();

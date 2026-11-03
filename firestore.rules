@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Pastel Planner — Firestore security rules
+// Uri Planner — Firestore security rules
 // users/{uid}/...  : only that user
 // teams/{teamId}   : members read/write records; anyone signed in may `get` a team doc (to join with its code)
 service cloud.firestore {

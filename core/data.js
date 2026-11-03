@@ -1,4 +1,6 @@
-/* Shared data definitions: category colours, default categories, themes. */
+/* Shared data definitions: app name, category colours, default categories, themes. */
+
+App.NAME = 'Uri Planner';
 
 // Category colours: fixed categorical order, validated for CVD separation in both modes.
 // Light steps are soft for the pastel UI; dark mode swaps each slot for its darker step (same hue).
@@ -42,4 +44,4 @@ App.THEMES = {
   lavender: { primary: '#8370d6', soft: '#e7e1fa' },
   peach: { primary: '#e07b4f', soft: '#fbe4d7' },
 };
-App.themeForGender = (g) => (g === 'male' ? 'sky' : g === 'female' ? 'sakura' : 'lavender');
+App.DEFAULT_THEME = 'sky'; // new accounts start on pastel blue; changeable in Settings
