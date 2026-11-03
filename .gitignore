@@ -1,0 +1,5 @@
+.DS_Store
+Icon?
+*.log
+node_modules/
+.firebase/

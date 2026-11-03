@@ -1,0 +1,63 @@
+rules_version = '2';
+
+// Pastel Planner — Firestore security rules
+// users/{uid}/...  : only that user
+// teams/{teamId}   : members read/write records; anyone signed in may `get` a team doc (to join with its code)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+
+    // ---------- personal data ----------
+    match /users/{userId} {
+      allow read, write: if signedIn() && uid() == userId;
+      match /{kind}/{docId} {
+        allow read, write: if signedIn() && uid() == userId
+          && kind in ['activities', 'transactions', 'categories'];
+      }
+    }
+
+    // ---------- teams ----------
+    match /teams/{teamId} {
+      function team() { return get(/databases/$(database)/documents/teams/$(teamId)).data; }
+      function isMember() { return signedIn() && uid() in resource.data.memberIds; }
+      function isOwner() { return signedIn() && resource.data.ownerId == uid(); }
+      function onlyChanges(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+      function namesChangeOnlySelf() {
+        return request.resource.data.memberNames.diff(resource.data.memberNames).affectedKeys().hasOnly([uid()]);
+      }
+
+      // `get` by id lets someone with the invite code look the team up; `list` only returns teams you belong to.
+      allow get: if signedIn();
+      allow list: if signedIn() && uid() in resource.data.memberIds;
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == uid()
+        && request.resource.data.memberIds == [uid()];
+
+      allow update: if
+        // owner may change anything except ownership
+        (isOwner() && request.resource.data.ownerId == resource.data.ownerId)
+        // join: add exactly yourself
+        || (signedIn() && !(uid() in resource.data.memberIds)
+            && onlyChanges(['memberIds', 'memberNames'])
+            && request.resource.data.memberIds == resource.data.memberIds.concat([uid()])
+            && namesChangeOnlySelf())
+        // leave: remove exactly yourself
+        || (isMember() && !isOwner()
+            && onlyChanges(['memberIds', 'memberNames'])
+            && request.resource.data.memberIds == resource.data.memberIds.removeAll([uid()])
+            && namesChangeOnlySelf())
+        // rename yourself
+        || (isMember() && onlyChanges(['memberNames']) && namesChangeOnlySelf());
+
+      allow delete: if isOwner();
+
+      match /{kind}/{docId} {
+        allow read, write: if signedIn() && uid() in team().memberIds
+          && kind in ['activities', 'transactions', 'categories'];
+      }
+    }
+  }
+}
